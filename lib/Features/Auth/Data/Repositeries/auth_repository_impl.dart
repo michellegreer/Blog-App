@@ -52,12 +52,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String name,
     required String email,
     required String password,
+    required String bio,
   }) async {
     return _getUser(
       () async => await remoteDatasource.signUpWithEmailAndPassword(
         email: email,
         password: password,
         name: name,
+        bio: bio,
       ),
     );
   }
@@ -84,8 +86,8 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       final user = await fn();
       return Right(user);
-    } on MyAuthException catch (_) {
-      return Left(Failure('wrong email or password'));
+    } on MyAuthException catch (e) {
+      return Left(Failure(e.message));
     } on ServerException catch (e) {
       return Left(Failure(e.message));
     }

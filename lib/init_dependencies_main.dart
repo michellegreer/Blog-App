@@ -5,40 +5,66 @@ final serviceLocater = GetIt.instance;
 Future<void> initDependencies() async {
   _authInit();
   _blogInit();
+  _videoBlogInit();
+  _commentInit();
 
   final supabase = await Supabase.initialize(
     url: AppSecrets.supaBaseUrl,
     anonKey: AppSecrets.supaBaseAnon,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
   );
   serviceLocater.registerLazySingleton(() => supabase.client);
 
-  final dir = await getApplicationDocumentsDirectory();
-  Hive.defaultDirectory = dir.path;
-  serviceLocater.registerLazySingleton(() => Hive.box(name: 'Blogs'));
+  if (!kIsWeb) {
+    final dir = await getApplicationDocumentsDirectory();
+    Hive.defaultDirectory = dir.path;
+    serviceLocater.registerLazySingleton(() => Hive.box(name: 'Blogs'));
+  }
 
   serviceLocater.registerFactory(() => InternetConnection());
-  //Core
   serviceLocater.registerLazySingleton(() => AppUserCubit());
   serviceLocater.registerLazySingleton(
-    () => LogoutUserCubit(supabase: serviceLocater()),
+    () => LogoutUserCubit(supabase: supabase),
   );
-
   serviceLocater.registerFactory<ConnectionCheker>(
     () => ConnectionCheckerImpl(internetConnection: serviceLocater()),
   );
 }
 
-void _blogInit() {
-  // DataSources
+void _videoBlogInit() {
+  serviceLocater
+    ..registerFactory<VideoPostRemoteDataSource>(
+      () => VideoPostRemoteDataSourceImpl(serviceLocater()),
+    )
+    ..registerFactory<VideoPostRepository>(
+      () => VideoPostRepositoryImpl(serviceLocater()),
+    )
+    ..registerFactory(() => GetAllVideoPosts(serviceLocater()))
+    ..registerFactory(() => CreateVideoPost(serviceLocater()))
+    ..registerFactory(() => UpdateVideoPost(serviceLocater()))
+    ..registerFactory(() => DeleteVideoPost(serviceLocater()))
+    ..registerLazySingleton(
+      () => VideoBlogBloc(
+        getAllVideoPosts: serviceLocater(),
+        createVideoPost: serviceLocater(),
+        updateVideoPost: serviceLocater(),
+        deleteVideoPost: serviceLocater(),
+      ),
+    );
+}
 
+void _blogInit() {
+  serviceLocater.registerFactory<BlogLocalDataSource>(
+    () => kIsWeb
+        ? BlogLocalDataSourceWebImpl()
+        : BlogLocaldatasourceImpl(box: serviceLocater()),
+  );
   serviceLocater
     ..registerFactory<BlogRemotedatasource>(
       () => BlocRemotedatasoursceImpl(supabaseClient: serviceLocater()),
     )
-    ..registerFactory<BlogLocalDataSource>(
-      () => BlogLocaldatasourceImpl(box: serviceLocater()),
-    )
-    // Repositery
     ..registerFactory<BlogRepositery>(
       () => BlogRepositeryimpl(
         blogRemotedatasource: serviceLocater(),
@@ -46,34 +72,42 @@ void _blogInit() {
         blogLocalDataSource: serviceLocater(),
       ),
     )
-    // UseCases
     ..registerFactory(() => UploadBlog(blogRepositery: serviceLocater()))
     ..registerFactory(() => GetAllBlogs(blogRepositery: serviceLocater()))
-    // Bloc
     ..registerLazySingleton(
-      () =>
-          BlogBloc(uploadBlog: serviceLocater(), getAllBlog: serviceLocater()),
+      () => BlogBloc(uploadBlog: serviceLocater(), getAllBlog: serviceLocater()),
     );
 }
 
-void _authInit() {
-  // DataSources
+void _commentInit() {
   serviceLocater
-    ..registerFactory<AuthRemoteDatasource>(
-      () => AuthRemoteDataSourceImpl(serviceLocater()),
+    ..registerFactory<CommentRemoteDataSource>(
+      () => CommentRemoteDataSourceImpl(serviceLocater()),
     )
-    // Repositories
+    ..registerFactory<CommentRepository>(
+      () => CommentRepositoryImpl(serviceLocater()),
+    )
+    ..registerFactory(() => GetComments(serviceLocater()))
+    ..registerFactory(() => AddComment(serviceLocater()));
+}
+
+void _authInit() {
+  serviceLocater
+    ..registerLazySingleton(
+      () => ResendService(AppSecrets.resendAPIKey),
+    )
+    ..registerFactory<AuthRemoteDatasource>(
+      () => AuthRemoteDataSourceImpl(serviceLocater(), serviceLocater()),
+    )
     ..registerFactory<AuthRepository>(
       () => AuthRepositoryImpl(
         remoteDatasource: serviceLocater(),
         connectionCheker: serviceLocater(),
       ),
     )
-    // UseCases
     ..registerFactory(() => UserSignup(serviceLocater()))
     ..registerFactory(() => UserLogin(serviceLocater()))
     ..registerFactory(() => CurrentUser(serviceLocater()))
-    // Bloc
     ..registerLazySingleton(
       () => AuthBloc(
         userSignup: serviceLocater(),

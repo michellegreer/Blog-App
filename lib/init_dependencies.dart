@@ -1,12 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
 import 'package:blog_app/Core/Common/Cubits/LogOut/logout_user_cubit.dart';
 import 'package:blog_app/Core/Network/connection_cheker.dart';
 import 'package:blog_app/Core/Secrets/app_secrets.dart';
+import 'package:blog_app/Core/Services/resend_service.dart';
+import 'package:blog_app/Features/Comments/Data/DataSource/comment_remote_datasource.dart';
+import 'package:blog_app/Features/Comments/Data/Repositories/comment_repository_impl.dart';
+import 'package:blog_app/Features/Comments/Domain/Repositories/comment_repository.dart';
+import 'package:blog_app/Features/Comments/Domain/UseCases/get_comments.dart';
+import 'package:blog_app/Features/Comments/Domain/UseCases/add_comment.dart';
 import 'package:blog_app/Features/Auth/Data/DataSource/auth_remote_datasource.dart';
 import 'package:blog_app/Features/Auth/Data/Repositeries/auth_repository_impl.dart';
 import 'package:blog_app/Features/Auth/Domain/Repositories/auth_repository.dart';
 import 'package:blog_app/Features/Auth/Domain/UseCases/current_user.dart';
-
 import 'package:blog_app/Features/Auth/Domain/UseCases/user_login.dart';
 import 'package:blog_app/Features/Auth/Domain/UseCases/user_signup.dart';
 import 'package:blog_app/Features/Auth/Presentation/bloc/auth_bloc.dart';
@@ -17,6 +23,15 @@ import 'package:blog_app/Features/Blog/Domain/Repositeries/blog_repositery.dart'
 import 'package:blog_app/Features/Blog/Domain/Use_Case/get_all_blogs.dart';
 import 'package:blog_app/Features/Blog/Domain/Use_Case/upload_blog.dart';
 import '../Features/Blog/Presentation/bloc/blog_bloc.dart';
+import 'package:blog_app/Features/Blog/Data/Data_Source/blog_localdatasource_web.dart';
+import 'package:blog_app/Features/VideoBlog/Data/DataSource/video_post_remote_data_source.dart';
+import 'package:blog_app/Features/VideoBlog/Data/Repositeries/video_post_repository_impl.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/Repositories/video_post_repository.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/get_all_video_posts.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/create_video_post.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/update_video_post.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/delete_video_post.dart';
+import 'package:blog_app/Features/VideoBlog/Presentation/bloc/video_blog_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';

@@ -21,6 +21,7 @@ class AuthFeilds extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
         controller: controller,
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           hintText: hint,
           suffixIcon: IconButton(
@@ -28,7 +29,6 @@ class AuthFeilds extends StatelessWidget {
             icon: Icon(visibilityIcon),
           ),
         ),
-
         validator: (value) {
           if (value!.isEmpty) {
             return '$hint is missing';

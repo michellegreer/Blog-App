@@ -1,11 +1,10 @@
-import 'package:blog_app/Core/Common/Widgets/loader.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Core/Utils/show_snackbar.dart';
+import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/signin_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_feilds.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_gradient_button.dart';
 import 'package:blog_app/Features/Auth/Presentation/bloc/auth_bloc.dart';
-import 'package:blog_app/Features/Blog/Presentation/Pages/blog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -20,35 +19,67 @@ class _SignupPageState extends State<SignupPage> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final emailController = TextEditingController();
+  final bioController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool isVisible = true;
+  bool _submitted = false;
+
   @override
   void dispose() {
     nameController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    bioController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KittehsScaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            return showSnackbar(context, state.message);
+            showSnackbar(context, state.message);
           }
           if (state is AuthSuccess) {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => BlogPage()),
-              (route) => false,
-            );
+            setState(() => _submitted = true);
           }
         },
         builder: (context, state) {
-          if (state is AuthLoading) {
-            return Loader();
+          if (_submitted) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('🐱', style: TextStyle(fontSize: 64)),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Request received!',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'The administrator will review your account and send you an email when it\'s approved.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 32),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Back to home'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
+
+          if (state is AuthLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           return Form(
             key: formKey,
             child: Center(
@@ -60,56 +91,61 @@ class _SignupPageState extends State<SignupPage> {
                       'Sign Up .',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     AuthFeilds(hint: 'Name', controller: nameController),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     AuthFeilds(hint: 'Email', controller: emailController),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     AuthFeilds(
                       hint: 'Password',
                       controller: passwordController,
                       isVisible: isVisible,
                       visibilityIcon:
                           isVisible ? Icons.visibility_off : Icons.visibility,
-                      callback: () {
-                        setState(() {
-                          isVisible = !isVisible;
-                        });
-                      },
+                      callback: () => setState(() => isVisible = !isVisible),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 15),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        controller: bioController,
+                        style: const TextStyle(color: Colors.white),
+                        maxLines: 3,
+                        maxLength: 280,
+                        decoration: const InputDecoration(
+                          hintText: 'Bio — tell us a little about yourself',
+                          alignLabelWithHint: true,
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty)
+                            ? 'Bio is required'
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     AuthGradientButton(
-                      textt: 'Sign Up',
+                      textt: 'Request Account',
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
-                          // print("Sign Up Button Pressed");
-                          // print("Name: ${nameController.text.trim()}");
-                          // print("Email: ${emailController.text.trim()}");
-                          // print("Password: ${passwordController.text.trim()}");
-
                           context.read<AuthBloc>().add(
                             SignedUpButonPressed(
                               name: nameController.text.trim(),
                               email: emailController.text.trim(),
                               password: passwordController.text.trim(),
+                              bio: bioController.text.trim(),
                             ),
                           );
                         }
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Already Have An Account'),
+                        const Text('Already have an account?'),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => SigninPage(),
-                              ),
-                            );
-                          },
+                          onPressed: () => Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => const SigninPage()),
+                          ),
                           child: Text(
                             'Sign In',
                             style: Theme.of(context).textTheme.bodyLarge!

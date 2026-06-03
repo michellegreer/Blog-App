@@ -44,7 +44,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // print('👤 Name: ${event.name}');
     // print('🔑 Password: ${event.password}');
     final res = await _userSignup(
-      UserSignUpParams(event.email, event.name, event.password),
+      UserSignUpParams(event.email, event.name, event.password, event.bio),
     );
 
     res.fold((l) {

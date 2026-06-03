@@ -17,6 +17,7 @@ class UserSignup implements UseCase<UserEnteties, UserSignUpParams> {
       name: params.name,
       email: params.email,
       password: params.password,
+      bio: params.bio,
     );
   }
 }
@@ -25,5 +26,6 @@ class UserSignUpParams {
   String name;
   String email;
   String password;
-  UserSignUpParams(this.email, this.name, this.password);
+  String bio;
+  UserSignUpParams(this.email, this.name, this.password, this.bio);
 }

@@ -3,10 +3,12 @@ import 'package:blog_app/Core/Common/Widgets/loader.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Core/Utils/error_dialog.dart';
 import 'package:blog_app/Core/Utils/logout_dialog.dart';
-
 import 'package:blog_app/Features/Blog/Presentation/Pages/add_new_blog_page.dart';
 import 'package:blog_app/Features/Blog/Presentation/Widgets/blog_card.dart';
 import 'package:blog_app/Features/Blog/Presentation/bloc/blog_bloc.dart';
+import 'package:blog_app/Features/VideoBlog/Presentation/bloc/video_blog_bloc.dart';
+import 'package:blog_app/Features/VideoBlog/Presentation/pages/video_post_list_page.dart';
+import 'package:blog_app/init_dependencies.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,6 +27,18 @@ class _BlogPageState extends State<BlogPage> {
     super.initState();
   }
 
+  void _openKittyBlog() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider(
+          create: (_) => serviceLocater<VideoBlogBloc>(),
+          child: const VideoPostListPage(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,10 +47,15 @@ class _BlogPageState extends State<BlogPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            onPressed: _openKittyBlog,
+            icon: const Text('🐱', style: TextStyle(fontSize: 22)),
+            tooltip: 'Kitty Videos',
+          ),
+          IconButton(
             onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (context) => AddNewBlogPage()));
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => AddNewBlogPage()),
+              );
             },
             icon: Icon(CupertinoIcons.add_circled),
           ),
@@ -68,10 +87,9 @@ class _BlogPageState extends State<BlogPage> {
                 final blog = state.blog[index];
                 return BlogCard(
                   blog: blog,
-                  color:
-                      index % 3 == 0
-                          ? AppPallate.gradient1
-                          : index % 3 == 1
+                  color: index % 3 == 0
+                      ? AppPallate.gradient1
+                      : index % 3 == 1
                           ? AppPallate.gradient2
                           : AppPallate.gradient3,
                 );

@@ -10,4 +10,5 @@ class AppPallate {
   static const Color greyColor = Colors.grey;
   static const Color errorColor = Colors.redAccent;
   static const Color transparentColor = Colors.transparent;
+  static const Color coralColor = Color(0xFFF88379);
 }

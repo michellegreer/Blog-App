@@ -1,11 +1,10 @@
-import 'package:blog_app/Core/Common/Widgets/loader.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Core/Utils/show_snackbar.dart';
+import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/signup_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_feilds.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_gradient_button.dart';
 import 'package:blog_app/Features/Auth/Presentation/bloc/auth_bloc.dart';
-import 'package:blog_app/Features/Blog/Presentation/Pages/blog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,6 +20,7 @@ class _SigninPageState extends State<SigninPage> {
   final emailController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool isVisible = true;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -30,24 +30,21 @@ class _SigninPageState extends State<SigninPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return KittehsScaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            return showSnackbar(context, state.message);
+            showSnackbar(context, state.message);
           }
           if (state is AuthSuccess) {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => BlogPage()),
-              (route) => false,
-            );
+            // Pop back to the public home (VideoPostListPage)
+            Navigator.of(context).pop();
           }
         },
         builder: (context, state) {
           if (state is AuthLoading) {
-            return Loader();
+            return const Center(child: CircularProgressIndicator());
           }
-
           return Form(
             key: formKey,
             child: Column(
@@ -57,23 +54,18 @@ class _SigninPageState extends State<SigninPage> {
                   'Sign In .',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                SizedBox(height: 30),
-
+                const SizedBox(height: 30),
                 AuthFeilds(hint: 'Email', controller: emailController),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 AuthFeilds(
                   hint: 'Password',
                   controller: passwordController,
                   isVisible: isVisible,
                   visibilityIcon:
                       isVisible ? Icons.visibility_off : Icons.visibility,
-                  callback: () {
-                    setState(() {
-                      isVisible = !isVisible;
-                    });
-                  },
+                  callback: () => setState(() => isVisible = !isVisible),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 AuthGradientButton(
                   textt: 'Sign In',
                   onPressed: () {
@@ -87,19 +79,17 @@ class _SigninPageState extends State<SigninPage> {
                     }
                   },
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Does Not Have An Acoount ?'),
+                    const Text('No account yet?'),
                     TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => SignupPage()),
-                        );
-                      },
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SignupPage()),
+                      ),
                       child: Text(
-                        'Sign Up',
+                        'Request one',
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: AppPallate.gradient2,
                         ),
