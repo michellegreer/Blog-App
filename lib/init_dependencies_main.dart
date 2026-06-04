@@ -27,16 +27,9 @@ Future<void> initDependencies() async {
   serviceLocater.registerLazySingleton(
     () => LogoutUserCubit(supabase: supabase),
   );
-  if (kIsWeb) {
-    serviceLocater.registerFactory<ConnectionCheker>(
-      () => WebConnectionCheckerImpl(),
-    );
-  } else {
-    serviceLocater.registerFactory(() => InternetConnection());
-    serviceLocater.registerFactory<ConnectionCheker>(
-      () => ConnectionCheckerImpl(internetConnection: serviceLocater()),
-    );
-  }
+  serviceLocater.registerFactory<ConnectionCheker>(
+    () => ConnectionCheckerImpl(),
+  );
 }
 
 void _videoBlogInit() {
