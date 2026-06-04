@@ -23,14 +23,20 @@ Future<void> initDependencies() async {
     serviceLocater.registerLazySingleton(() => Hive.box(name: 'Blogs'));
   }
 
-  serviceLocater.registerFactory(() => InternetConnection());
   serviceLocater.registerLazySingleton(() => AppUserCubit());
   serviceLocater.registerLazySingleton(
     () => LogoutUserCubit(supabase: supabase),
   );
-  serviceLocater.registerFactory<ConnectionCheker>(
-    () => ConnectionCheckerImpl(internetConnection: serviceLocater()),
-  );
+  if (kIsWeb) {
+    serviceLocater.registerFactory<ConnectionCheker>(
+      () => WebConnectionCheckerImpl(),
+    );
+  } else {
+    serviceLocater.registerFactory(() => InternetConnection());
+    serviceLocater.registerFactory<ConnectionCheker>(
+      () => ConnectionCheckerImpl(internetConnection: serviceLocater()),
+    );
+  }
 }
 
 void _videoBlogInit() {
