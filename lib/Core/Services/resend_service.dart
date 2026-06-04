@@ -19,7 +19,7 @@ class ResendService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'from': 'Kittehs FTW <noreply@michellesblog.net>',
+        'from': 'Kittehs FTW <onboarding@resend.dev>',
         'to': [toEmail],
         'subject': 'New account request from $newUserName',
         'html': '''
