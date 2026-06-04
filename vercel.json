@@ -1,0 +1,11 @@
+{
+  "buildCommand": "git clone https://github.com/flutter/flutter.git -b stable --depth 1 flutter && flutter/bin/flutter config --enable-web && flutter/bin/flutter pub get && flutter/bin/flutter build web --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY --dart-define=RESEND_API_KEY=$RESEND_API_KEY --dart-define=ADMIN_EMAIL=$ADMIN_EMAIL",
+  "outputDirectory": "build/web",
+  "installCommand": "echo skip",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
