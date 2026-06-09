@@ -20,7 +20,7 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'About Kittehs FTW',
+              'About Kitties FTW',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: screenW >= 700 ? 36 : 26,
@@ -32,7 +32,7 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 24),
             const Text(
               'Kids love cat videos, but YouTube isn\'t the safest place to send your kids. '
-              'Kittehs FTW provides a safe place to share and comment on cat videos with your '
+              'Kitties FTW provides a safe place to share and comment on cat videos with your '
               'friends and family. Every user here is vetted by the creator of this website, '
               'Michelle Greer.',
               style: bodyStyle,

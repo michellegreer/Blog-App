@@ -41,7 +41,7 @@ class _SignupPageState extends State<SignupPage> {
           if (state is AuthFailure) {
             showSnackbar(context, state.message);
           }
-          if (state is AuthSuccess) {
+          if (state is AuthPendingApproval) {
             setState(() => _submitted = true);
           }
         },

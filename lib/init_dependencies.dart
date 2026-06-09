@@ -3,7 +3,6 @@ import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
 import 'package:blog_app/Core/Common/Cubits/LogOut/logout_user_cubit.dart';
 import 'package:blog_app/Core/Network/connection_cheker.dart';
 import 'package:blog_app/Core/Secrets/app_secrets.dart';
-import 'package:blog_app/Core/Services/resend_service.dart';
 import 'package:blog_app/Features/Comments/Data/DataSource/comment_remote_datasource.dart';
 import 'package:blog_app/Features/Comments/Data/Repositories/comment_repository_impl.dart';
 import 'package:blog_app/Features/Comments/Domain/Repositories/comment_repository.dart';

@@ -19,13 +19,13 @@ class ResendService {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
-        'from': 'Kittehs FTW <onboarding@resend.dev>',
+        'from': 'Kitties FTW <admin@kittiesftw.com>',
         'to': [toEmail],
         'subject': 'New account request from $newUserName',
         'html': '''
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
             <h2>New Account Request</h2>
-            <p>Someone wants to post on Kittehs FTW!</p>
+            <p>Someone wants to post on Kitties FTW!</p>
             <p><strong>Name:</strong> $newUserName</p>
             <p><strong>Email:</strong> $newUserEmail</p>
             <p><strong>Bio:</strong> ${newUserBio.isEmpty ? '(none provided)' : newUserBio}</p>

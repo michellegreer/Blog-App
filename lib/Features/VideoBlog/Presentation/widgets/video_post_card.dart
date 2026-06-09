@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:blog_app/Core/Common/Widgets/user_bio_sheet.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/Entities/video_post.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/pages/video_post_detail_page.dart';
@@ -105,25 +106,35 @@ class _PostedByRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _Avatar(
-          avatarUrl: post.posterAvatarUrl,
-          name: post.postedByName ?? '',
-          radius: 14,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            'Posted by ${post.postedByName}',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppPallate.coralColor),
-            overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: post.postedById == null
+          ? null
+          : () => showUserBio(
+                context,
+                userId: post.postedById!,
+                userName: post.postedByName ?? '',
+                avatarUrl: post.posterAvatarUrl,
+              ),
+      child: Row(
+        children: [
+          _Avatar(
+            avatarUrl: post.posterAvatarUrl,
+            name: post.postedByName ?? '',
+            radius: 14,
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Posted by ${post.postedByName}',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppPallate.coralColor),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

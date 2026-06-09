@@ -92,11 +92,8 @@ void _commentInit() {
 
 void _authInit() {
   serviceLocater
-    ..registerLazySingleton(
-      () => ResendService(AppSecrets.resendAPIKey),
-    )
     ..registerFactory<AuthRemoteDatasource>(
-      () => AuthRemoteDataSourceImpl(serviceLocater(), serviceLocater()),
+      () => AuthRemoteDataSourceImpl(serviceLocater()),
     )
     ..registerFactory<AuthRepository>(
       () => AuthRepositoryImpl(

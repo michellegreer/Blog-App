@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
+import 'package:blog_app/Core/Common/Widgets/user_bio_sheet.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/signin_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/signup_page.dart';
 import 'package:blog_app/Features/Comments/Domain/Entities/comment.dart';
@@ -255,10 +256,18 @@ class _CommentTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Avatar(
+          GestureDetector(
+            onTap: () => showUserBio(
+              context,
+              userId: comment.userId,
+              userName: comment.userName,
               avatarUrl: comment.userAvatarUrl,
-              name: comment.userName,
-              radius: 16),
+            ),
+            child: _Avatar(
+                avatarUrl: comment.userAvatarUrl,
+                name: comment.userName,
+                radius: 16),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -266,12 +275,20 @@ class _CommentTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      comment.userName,
-                      style: const TextStyle(
-                        color: AppPallate.coralColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                    GestureDetector(
+                      onTap: () => showUserBio(
+                        context,
+                        userId: comment.userId,
+                        userName: comment.userName,
+                        avatarUrl: comment.userAvatarUrl,
+                      ),
+                      child: Text(
+                        comment.userName,
+                        style: const TextStyle(
+                          color: AppPallate.coralColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),

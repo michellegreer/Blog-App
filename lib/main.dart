@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
       },
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Kittehs FTW',
+        title: 'Kitties FTW',
         theme: AppTheme.darkThemeMode,
         home: const VideoPostListPage(),
       ),

@@ -38,19 +38,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SignedUpButonPressed event,
     Emitter<AuthState> emit,
   ) async {
-    // print('auth block is called');
-    // print('auth block is called');
-    // print('📧 Email: ${event.email}');
-    // print('👤 Name: ${event.name}');
-    // print('🔑 Password: ${event.password}');
     final res = await _userSignup(
       UserSignUpParams(event.email, event.name, event.password, event.bio),
     );
-
-    res.fold((l) {
-      // print("🚨 Signup Failed: ${l.message}");
-      emit(AuthFailure(l.message));
-    }, (user) => _emitAuthSucces(user, emit));
+    // Signup never logs the user in — account must be approved first
+    res.fold(
+      (l) => emit(AuthFailure(l.message)),
+      (_) => emit(AuthPendingApproval()),
+    );
   }
 
   void _onAuthLogIn(LogedInButonPressed event, Emitter<AuthState> emit) async {

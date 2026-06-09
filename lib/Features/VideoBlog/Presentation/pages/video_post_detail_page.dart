@@ -8,6 +8,7 @@ import 'package:blog_app/Features/Comments/Domain/UseCases/add_comment.dart';
 import 'package:blog_app/Features/Comments/Presentation/Bloc/comment_bloc.dart';
 import 'package:blog_app/Features/Comments/Presentation/Widgets/comment_section.dart';
 import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
+import 'package:blog_app/Core/Common/Widgets/user_bio_sheet.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/Entities/video_post.dart';
 import 'package:blog_app/init_dependencies.dart';
 
@@ -103,10 +104,7 @@ class _DesktopLayout extends StatelessWidget {
               children: [
                 AspectRatio(
                   aspectRatio: 16 / 9,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: YoutubePlayer(controller: controller),
-                  ),
+                  child: YoutubePlayer(controller: controller),
                 ),
                 const SizedBox(height: 16),
                 Text(post.title,
@@ -203,19 +201,29 @@ class _PostedByRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      _buildAvatar(),
-      const SizedBox(width: 10),
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('Posted by',
-            style: TextStyle(color: Colors.grey, fontSize: 12)),
-        Text(post.postedByName!,
-            style: const TextStyle(
-                color: AppPallate.coralColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14)),
+    return GestureDetector(
+      onTap: post.postedById == null
+          ? null
+          : () => showUserBio(
+                context,
+                userId: post.postedById!,
+                userName: post.postedByName ?? '',
+                avatarUrl: post.posterAvatarUrl,
+              ),
+      child: Row(children: [
+        _buildAvatar(),
+        const SizedBox(width: 10),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Text('Posted by',
+              style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(post.postedByName!,
+              style: const TextStyle(
+                  color: AppPallate.coralColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14)),
+        ]),
       ]),
-    ]);
+    );
   }
 
   Widget _buildAvatar() {

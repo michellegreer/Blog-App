@@ -1,6 +1,5 @@
 import 'package:blog_app/Core/Errors/exceptions.dart';
 import 'package:blog_app/Core/Secrets/app_secrets.dart';
-import 'package:blog_app/Core/Services/resend_service.dart';
 import 'package:blog_app/Features/Auth/Data/Modals/user_modal.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -22,9 +21,8 @@ abstract interface class AuthRemoteDatasource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
   final SupabaseClient supabaseClient;
-  final ResendService resendService;
 
-  AuthRemoteDataSourceImpl(this.supabaseClient, this.resendService);
+  AuthRemoteDataSourceImpl(this.supabaseClient);
 
   @override
   Session? get currentUserSession => supabaseClient.auth.currentSession;
@@ -55,42 +53,34 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
     required String bio,
   }) async {
     try {
+      final approvalToken = const Uuid().v4();
+
       final AuthResponse res = await supabaseClient.auth.signUp(
         email: email,
         password: password,
-        data: {'name': name},
+        data: {
+          'name': name,
+          'approval_token': approvalToken,
+          'bio': bio.trim().isEmpty ? null : bio.trim(),
+        },
       );
 
       if (res.user == null) throw ServerException('User is null!');
 
-      final approvalToken = const Uuid().v4();
-
-      // Give the trigger a moment to create the profile row, then update it
-      await Future.delayed(const Duration(milliseconds: 500));
-      await supabaseClient.from('profiles').update({
-        'is_approved': false,
-        'role': 'user',
-        'approval_token': approvalToken,
-        'bio': bio.trim().isEmpty ? null : bio.trim(),
-      }).eq('id', res.user!.id);
+      // Notify admin before signing out (session required for invoke)
+      await supabaseClient.functions.invoke(
+        'notify-admin',
+        body: {
+          'userName': name,
+          'userEmail': email,
+          'userBio': bio.trim(),
+          'userId': res.user!.id,
+          'approvalToken': approvalToken,
+        },
+      ).catchError((_) => FunctionResponse(data: null, status: 0));
 
       // Sign out immediately — user must wait for admin approval
       await supabaseClient.auth.signOut();
-
-      final approvalLink =
-          '${AppSecrets.supaBaseUrl}/functions/v1/approve-user'
-          '?user_id=${res.user!.id}&token=$approvalToken';
-
-      // Send approval email to admin (fire and forget — don't fail signup if email errors)
-      resendService
-          .sendAdminApprovalEmail(
-            toEmail: AppSecrets.adminEmail,
-            newUserName: name,
-            newUserEmail: email,
-            newUserBio: bio.trim(),
-            approvalLink: approvalLink,
-          )
-          .catchError((_) {});
 
       return UserModel.fromJson(res.user!.toJson()).copyWith(
         name: name,
