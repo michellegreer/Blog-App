@@ -11,6 +11,9 @@ class CreateVideoPostParams {
   final String? postedByName;
   final String? postedById;
   final String? posterAvatarUrl;
+  final String? visibilityCircleType;
+  final String? visibilityCircleId;
+  final bool isPublic;
 
   const CreateVideoPostParams({
     required this.title,
@@ -19,6 +22,9 @@ class CreateVideoPostParams {
     this.postedByName,
     this.postedById,
     this.posterAvatarUrl,
+    this.visibilityCircleType,
+    this.visibilityCircleId,
+    this.isPublic = false,
   });
 }
 
@@ -35,6 +41,9 @@ class CreateVideoPost implements UseCase<VideoPost, CreateVideoPostParams> {
       postedByName: params.postedByName,
       postedById: params.postedById,
       posterAvatarUrl: params.posterAvatarUrl,
+      visibilityCircleType: params.visibilityCircleType,
+      visibilityCircleId: params.visibilityCircleId,
+      isPublic: params.isPublic,
     );
   }
 }

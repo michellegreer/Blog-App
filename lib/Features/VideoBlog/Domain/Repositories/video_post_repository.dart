@@ -11,12 +11,18 @@ abstract interface class VideoPostRepository {
     String? postedByName,
     String? postedById,
     String? posterAvatarUrl,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic,
   });
   Future<Either<Failure, VideoPost>> updateVideoPost({
     required String id,
     required String title,
     required String youtubeUrl,
     String? commentary,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic,
   });
   Future<Either<Failure, Unit>> deleteVideoPost(String id);
   Future<Either<Failure, VideoPost>> getVideoByIdPrefix(String idPrefix);

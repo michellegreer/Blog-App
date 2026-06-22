@@ -17,6 +17,9 @@ final class VideoBlogCreate extends VideoBlogEvent {
   final String? postedByName;
   final String? postedById;
   final String? posterAvatarUrl;
+  final String? visibilityCircleType;
+  final String? visibilityCircleId;
+  final bool isPublic;
 
   VideoBlogCreate({
     required this.title,
@@ -25,6 +28,9 @@ final class VideoBlogCreate extends VideoBlogEvent {
     this.postedByName,
     this.postedById,
     this.posterAvatarUrl,
+    this.visibilityCircleType,
+    this.visibilityCircleId,
+    this.isPublic = false,
   });
 }
 
@@ -33,7 +39,19 @@ final class VideoBlogUpdate extends VideoBlogEvent {
   final String title;
   final String youtubeUrl;
   final String? commentary;
-  VideoBlogUpdate({required this.id, required this.title, required this.youtubeUrl, this.commentary});
+  final String? visibilityCircleType;
+  final String? visibilityCircleId;
+  final bool isPublic;
+
+  VideoBlogUpdate({
+    required this.id,
+    required this.title,
+    required this.youtubeUrl,
+    this.commentary,
+    this.visibilityCircleType,
+    this.visibilityCircleId,
+    this.isPublic = false,
+  });
 }
 
 final class VideoBlogDelete extends VideoBlogEvent {

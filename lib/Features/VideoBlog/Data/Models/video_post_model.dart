@@ -10,6 +10,9 @@ class VideoPostModel extends VideoPost {
     super.postedByName,
     super.postedById,
     super.posterAvatarUrl,
+    super.visibilityCircleType,
+    super.visibilityCircleId,
+    super.isPublic,
   });
 
   factory VideoPostModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +25,10 @@ class VideoPostModel extends VideoPost {
       postedByName: json['posted_by_name'] as String?,
       postedById: json['posted_by_id'] as String?,
       posterAvatarUrl: json['poster_avatar_url'] as String?,
+      visibilityCircleType:
+          CircleType.fromDb(json['visibility_circle_type'] as String?),
+      visibilityCircleId: json['visibility_circle_id'] as String?,
+      isPublic: json['is_public'] as bool? ?? false,
     );
   }
 }

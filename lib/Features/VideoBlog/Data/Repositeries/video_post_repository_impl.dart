@@ -27,6 +27,9 @@ class VideoPostRepositoryImpl implements VideoPostRepository {
     String? postedByName,
     String? postedById,
     String? posterAvatarUrl,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic = false,
   }) async {
     try {
       final post = await remoteDataSource.createVideoPost(
@@ -36,6 +39,9 @@ class VideoPostRepositoryImpl implements VideoPostRepository {
         postedByName: postedByName,
         postedById: postedById,
         posterAvatarUrl: posterAvatarUrl,
+        visibilityCircleType: visibilityCircleType,
+        visibilityCircleId: visibilityCircleId,
+        isPublic: isPublic,
       );
       return right(post);
     } on ServerException catch (e) {
@@ -49,6 +55,9 @@ class VideoPostRepositoryImpl implements VideoPostRepository {
     required String title,
     required String youtubeUrl,
     String? commentary,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic = false,
   }) async {
     try {
       final post = await remoteDataSource.updateVideoPost(
@@ -56,6 +65,9 @@ class VideoPostRepositoryImpl implements VideoPostRepository {
         title: title,
         youtubeUrl: youtubeUrl,
         commentary: commentary,
+        visibilityCircleType: visibilityCircleType,
+        visibilityCircleId: visibilityCircleId,
+        isPublic: isPublic,
       );
       return right(post);
     } on ServerException catch (e) {

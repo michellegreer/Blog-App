@@ -58,6 +58,9 @@ class VideoBlogBloc extends Bloc<VideoBlogEvent, VideoBlogState> {
       postedByName: event.postedByName,
       postedById: event.postedById,
       posterAvatarUrl: event.posterAvatarUrl,
+      visibilityCircleType: event.visibilityCircleType,
+      visibilityCircleId: event.visibilityCircleId,
+      isPublic: event.isPublic,
     ));
     result.fold(
       (failure) => emit(VideoBlogFailure(failure.message)),
@@ -72,6 +75,9 @@ class VideoBlogBloc extends Bloc<VideoBlogEvent, VideoBlogState> {
       title: event.title,
       youtubeUrl: event.youtubeUrl,
       commentary: event.commentary,
+      visibilityCircleType: event.visibilityCircleType,
+      visibilityCircleId: event.visibilityCircleId,
+      isPublic: event.isPublic,
     ));
     result.fold(
       (failure) => emit(VideoBlogFailure(failure.message)),

@@ -11,12 +11,18 @@ abstract interface class VideoPostRemoteDataSource {
     String? postedByName,
     String? postedById,
     String? posterAvatarUrl,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic,
   });
   Future<VideoPostModel> updateVideoPost({
     required String id,
     required String title,
     required String youtubeUrl,
     String? commentary,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic,
   });
   Future<void> deleteVideoPost(String id);
   Future<VideoPostModel> getVideoByIdPrefix(String idPrefix);
@@ -47,6 +53,9 @@ class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
     String? postedByName,
     String? postedById,
     String? posterAvatarUrl,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic = false,
   }) async {
     try {
       final response = await supabaseClient
@@ -58,6 +67,9 @@ class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
             'posted_by_name': postedByName,
             'posted_by_id': postedById,
             'poster_avatar_url': posterAvatarUrl,
+            'visibility_circle_type': visibilityCircleType,
+            'visibility_circle_id': visibilityCircleId,
+            'is_public': isPublic,
           })
           .select()
           .single();
@@ -73,6 +85,9 @@ class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
     required String title,
     required String youtubeUrl,
     String? commentary,
+    String? visibilityCircleType,
+    String? visibilityCircleId,
+    bool isPublic = false,
   }) async {
     try {
       final response = await supabaseClient
@@ -81,6 +96,9 @@ class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
             'title': title,
             'youtube_url': youtubeUrl,
             'commentary': commentary,
+            'visibility_circle_type': visibilityCircleType,
+            'visibility_circle_id': visibilityCircleId,
+            'is_public': isPublic,
           })
           .eq('id', id)
           .select()
