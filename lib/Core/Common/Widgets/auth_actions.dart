@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
 import 'package:blog_app/Core/Common/Cubits/LogOut/logout_user_cubit.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
@@ -19,10 +20,17 @@ class AuthActions extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfilePage()),
-                ),
+                onTap: () {
+                  final username = user.username;
+                  if (username != null && username.isNotEmpty) {
+                    context.go('/$username');
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfilePage()),
+                    );
+                  }
+                },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: _buildAvatar(user.avatarUrl, user.name),
