@@ -61,7 +61,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     res.fold(
       (l) => emit(AuthFailure(l.message)),
-      (user) => _emitAuthSucces(user, emit),
+      (user) {
+        if (user == null) {
+          emit(AuthEmailVerificationPending());
+        } else {
+          _emitAuthSucces(user, emit);
+        }
+      },
     );
   }
 

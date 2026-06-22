@@ -4,11 +4,11 @@ import 'package:blog_app/Core/Common/Enteties/user_enteties.dart';
 import 'package:blog_app/Features/Auth/Domain/Repositories/auth_repository.dart';
 import 'package:fpdart/fpdart.dart';
 
-class UserSignup implements UseCase<UserEnteties, UserSignUpParams> {
+class UserSignup implements UseCase<UserEnteties?, UserSignUpParams> {
   AuthRepository authRepository;
   UserSignup(this.authRepository);
   @override
-  Future<Either<Failure, UserEnteties>> call(UserSignUpParams params) async {
+  Future<Either<Failure, UserEnteties?>> call(UserSignUpParams params) async {
     // print('user signup called');
     // print('📧 Email in UseCase: ${params.email}');
     // print('👤 Name in UseCase: ${params.name}');

@@ -49,6 +49,12 @@ class _SignupPageState extends State<SignupPage> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (state is AuthEmailVerificationPending) {
+            return _EmailVerificationPendingView(
+              email: emailController.text.trim(),
+            );
+          }
+
           return Form(
             key: formKey,
             child: Center(
@@ -129,6 +135,56 @@ class _SignupPageState extends State<SignupPage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _EmailVerificationPendingView extends StatelessWidget {
+  final String email;
+  const _EmailVerificationPendingView({required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('📬', style: TextStyle(fontSize: 56)),
+            const SizedBox(height: 24),
+            Text(
+              'Check your email',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: Colors.white),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'We sent a confirmation link to\n$email',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white54, height: 1.5),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Click the link to activate your account, then sign in.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white38, fontSize: 13),
+            ),
+            const SizedBox(height: 32),
+            TextButton(
+              onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const SigninPage()),
+              ),
+              child: Text(
+                'Go to Sign In',
+                style: TextStyle(color: AppPallate.gradient2),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

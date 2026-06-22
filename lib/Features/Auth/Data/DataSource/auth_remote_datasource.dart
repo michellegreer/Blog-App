@@ -5,7 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 abstract interface class AuthRemoteDatasource {
   Session? get currentUserSession;
   Future<UserModel?> getCurrentUserData();
-  Future<UserModel> signUpWithEmailAndPassword({
+  // Returns null when email confirmation is pending (session not yet issued)
+  Future<UserModel?> signUpWithEmailAndPassword({
     required String name,
     required String email,
     required String password,
@@ -48,7 +49,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
   }
 
   @override
-  Future<UserModel> signUpWithEmailAndPassword({
+  Future<UserModel?> signUpWithEmailAndPassword({
     required String name,
     required String email,
     required String password,
@@ -64,13 +65,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
         },
       );
 
-      if (res.user == null) throw ServerException('User is null!');
+      if (res.user == null) throw ServerException('Signup failed');
 
-      await supabaseClient.from('profiles').upsert({
-        'id': res.user!.id,
-        'name': name,
-        'bio': bio.trim().isEmpty ? null : bio.trim(),
-      });
+      // Email confirmation required — handle_new_user trigger creates the
+      // profile row. Return null to signal pending state to the caller.
+      if (res.session == null) return null;
 
       return UserModel(
         id: res.user!.id,

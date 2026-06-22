@@ -48,20 +48,28 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEnteties>> signUpWithEmailAndPasssword({
+  Future<Either<Failure, UserEnteties?>> signUpWithEmailAndPasssword({
     required String name,
     required String email,
     required String password,
     required String bio,
   }) async {
-    return _getUser(
-      () async => await remoteDatasource.signUpWithEmailAndPassword(
+    try {
+      if (!await connectionCheker.isConnected) {
+        return left(Failure(Constants.noConnection));
+      }
+      final user = await remoteDatasource.signUpWithEmailAndPassword(
         email: email,
         password: password,
         name: name,
         bio: bio,
-      ),
-    );
+      );
+      return right(user); // null = email confirmation pending
+    } on MyAuthException catch (e) {
+      return left(Failure(e.message));
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
   }
 
   @override
