@@ -92,4 +92,61 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> sendPasswordResetEmail({
+    required String email,
+    required String redirectTo,
+  }) async {
+    try {
+      if (!await connectionCheker.isConnected) {
+        return Left(Failure(Constants.noConnection));
+      }
+      await remoteDatasource.sendPasswordResetEmail(
+        email: email,
+        redirectTo: redirectTo,
+      );
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updatePassword({
+    required String newPassword,
+  }) async {
+    try {
+      if (!await connectionCheker.isConnected) {
+        return Left(Failure(Constants.noConnection));
+      }
+      await remoteDatasource.updatePassword(newPassword: newPassword);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> sendPhoneOtp({required String phone}) async {
+    try {
+      if (!await connectionCheker.isConnected) {
+        return Left(Failure(Constants.noConnection));
+      }
+      await remoteDatasource.sendPhoneOtp(phone: phone);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEnteties>> verifyPhoneOtp({
+    required String phone,
+    required String token,
+  }) async {
+    return _getUser(
+      () => remoteDatasource.verifyPhoneOtp(phone: phone, token: token),
+    );
+  }
 }

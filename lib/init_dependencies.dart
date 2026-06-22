@@ -12,8 +12,14 @@ import 'package:blog_app/Features/Auth/Data/DataSource/auth_remote_datasource.da
 import 'package:blog_app/Features/Auth/Data/Repositeries/auth_repository_impl.dart';
 import 'package:blog_app/Features/Auth/Domain/Repositories/auth_repository.dart';
 import 'package:blog_app/Features/Auth/Domain/UseCases/current_user.dart';
+import 'package:blog_app/Features/Auth/Domain/UseCases/forgot_password.dart';
+import 'package:blog_app/Features/Auth/Domain/UseCases/request_phone_otp.dart';
+import 'package:blog_app/Features/Auth/Domain/UseCases/reset_password.dart';
 import 'package:blog_app/Features/Auth/Domain/UseCases/user_login.dart';
 import 'package:blog_app/Features/Auth/Domain/UseCases/user_signup.dart';
+import 'package:blog_app/Features/Auth/Domain/UseCases/verify_phone_otp.dart';
+import 'package:blog_app/Features/Invite/Data/DataSource/invite_remote_data_source.dart';
+import 'package:blog_app/Features/Invite/Domain/UseCases/send_invite.dart';
 import 'package:blog_app/Features/Auth/Presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/Features/Blog/Data/Data_Source/blog_localdatasource.dart';
 import 'package:blog_app/Features/Blog/Data/Data_Source/blog_remotedatasource.dart';
@@ -30,6 +36,7 @@ import 'package:blog_app/Features/VideoBlog/Domain/UseCases/get_all_video_posts.
 import 'package:blog_app/Features/VideoBlog/Domain/UseCases/create_video_post.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/UseCases/update_video_post.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/UseCases/delete_video_post.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/get_video_by_id_prefix.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/bloc/video_blog_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';

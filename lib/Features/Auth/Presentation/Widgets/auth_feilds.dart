@@ -6,6 +6,7 @@ class AuthFeilds extends StatelessWidget {
   final IconData? visibilityIcon;
   final VoidCallback? callback;
   final TextEditingController controller;
+  final String? Function(String?)? validator;
   const AuthFeilds({
     super.key,
     this.hint,
@@ -13,6 +14,7 @@ class AuthFeilds extends StatelessWidget {
     this.isVisible = false,
     this.visibilityIcon,
     this.callback,
+    this.validator,
   });
 
   @override
@@ -29,10 +31,8 @@ class AuthFeilds extends StatelessWidget {
             icon: Icon(visibilityIcon),
           ),
         ),
-        validator: (value) {
-          if (value!.isEmpty) {
-            return '$hint is missing';
-          }
+        validator: validator ?? (value) {
+          if (value!.isEmpty) return '$hint is missing';
           return null;
         },
         obscureText: isVisible,

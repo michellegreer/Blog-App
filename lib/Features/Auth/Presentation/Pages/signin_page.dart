@@ -1,7 +1,7 @@
-import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Core/Utils/show_snackbar.dart';
 import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
-import 'package:blog_app/Features/Auth/Presentation/Pages/signup_page.dart';
+import 'package:blog_app/Features/Auth/Presentation/Pages/forgot_password_page.dart';
+import 'package:blog_app/Features/Auth/Presentation/Pages/phone_signin_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_feilds.dart';
 import 'package:blog_app/Features/Auth/Presentation/Widgets/auth_gradient_button.dart';
 import 'package:blog_app/Features/Auth/Presentation/bloc/auth_bloc.dart';
@@ -79,23 +79,23 @@ class _SigninPageState extends State<SigninPage> {
                     }
                   },
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('No account yet?'),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SignupPage()),
-                      ),
-                      child: Text(
-                        'Request one',
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: AppPallate.gradient2,
-                        ),
-                      ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordPage(),
                     ),
-                  ],
+                  ),
+                  child: const Text('Forgot password?'),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PhoneSignInPage(),
+                    ),
+                  ),
+                  child: const Text('Sign in with phone instead'),
                 ),
               ],
             ),

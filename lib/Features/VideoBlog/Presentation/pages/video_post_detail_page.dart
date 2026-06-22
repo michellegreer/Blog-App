@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart'
     show YoutubePlayer, YoutubePlayerController, YoutubePlayerParams;
+import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
+import 'package:blog_app/Core/Common/Utils/slug_utils.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
+import 'package:blog_app/Features/Invite/Presentation/Widgets/invite_dialog.dart';
 import 'package:blog_app/Features/Comments/Domain/UseCases/get_comments.dart';
 import 'package:blog_app/Features/Comments/Domain/UseCases/add_comment.dart';
 import 'package:blog_app/Features/Comments/Presentation/Bloc/comment_bloc.dart';
@@ -10,25 +13,39 @@ import 'package:blog_app/Features/Comments/Presentation/Widgets/comment_section.
 import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
 import 'package:blog_app/Core/Common/Widgets/user_bio_sheet.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/Entities/video_post.dart';
+import 'package:blog_app/Features/VideoBlog/Domain/UseCases/get_video_by_id_prefix.dart';
 import 'package:blog_app/init_dependencies.dart';
 
 class VideoPostDetailPage extends StatefulWidget {
-  final VideoPost post;
-  const VideoPostDetailPage({super.key, required this.post});
+  final String slug;
+  final VideoPost? post;
+
+  const VideoPostDetailPage({super.key, required this.slug, this.post});
 
   @override
   State<VideoPostDetailPage> createState() => _VideoPostDetailPageState();
 }
 
 class _VideoPostDetailPageState extends State<VideoPostDetailPage> {
-  late YoutubePlayerController _controller;
-  late CommentBloc _commentBloc;
+  YoutubePlayerController? _controller;
+  CommentBloc? _commentBloc;
+  VideoPost? _post;
+  bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
+    if (widget.post != null) {
+      _initPost(widget.post!);
+    } else {
+      _loadFromSlug();
+    }
+  }
+
+  void _initPost(VideoPost post) {
     final videoId =
-        YoutubePlayerController.convertUrlToId(widget.post.youtubeUrl) ?? '';
+        YoutubePlayerController.convertUrlToId(post.youtubeUrl) ?? '';
     _controller = YoutubePlayerController.fromVideoId(
       videoId: videoId,
       autoPlay: false,
@@ -42,38 +59,68 @@ class _VideoPostDetailPageState extends State<VideoPostDetailPage> {
       getComments: serviceLocater<GetComments>(),
       addComment: serviceLocater<AddComment>(),
     );
-    _commentBloc.add(FetchComments(widget.post.id));
+    _commentBloc!.add(FetchComments(post.id));
+    if (mounted) setState(() { _post = post; _loading = false; });
+  }
+
+  Future<void> _loadFromSlug() async {
+    final idPrefix = idPrefixFromSlug(widget.slug);
+    final result = await serviceLocater<GetVideoByIdPrefix>().call(idPrefix);
+    result.fold(
+      (failure) {
+        if (mounted) setState(() { _error = failure.message; _loading = false; });
+      },
+      (post) => _initPost(post),
+    );
   }
 
   @override
   void dispose() {
-    _controller.close();
-    _commentBloc.close();
+    _controller?.close();
+    _commentBloc?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return KittehsScaffold(
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null || _post == null) {
+      return KittehsScaffold(
+        body: Center(
+          child: Text(_error ?? 'Video not found',
+              style: const TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+
     return BlocProvider.value(
-      value: _commentBloc,
+      value: _commentBloc!,
       child: KittehsScaffold(
+        extraActions: [
+          BlocBuilder<AppUserCubit, AppUserState>(
+            builder: (context, userState) {
+              if (userState is! AppUserLoggedIn) return const SizedBox.shrink();
+              return IconButton(
+                icon: const Icon(Icons.person_add_outlined),
+                tooltip: 'Invite someone',
+                onPressed: () => showInviteDialog(context),
+              );
+            },
+          ),
+        ],
         body: LayoutBuilder(builder: (context, constraints) {
           final isDesktop = constraints.maxWidth >= 900;
-          // Fluid horizontal padding: 6% of width, clamped
           final hPad = (constraints.maxWidth * 0.06).clamp(16.0, 100.0);
-
           if (isDesktop) {
             return _DesktopLayout(
-              post: widget.post,
-              controller: _controller,
-              hPad: hPad,
-            );
+                post: _post!, controller: _controller!, hPad: hPad);
           }
           return _MobileLayout(
-            post: widget.post,
-            controller: _controller,
-            hPad: hPad,
-          );
+              post: _post!, controller: _controller!, hPad: hPad);
         }),
       ),
     );
@@ -96,7 +143,6 @@ class _DesktopLayout extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left column — video + meta
           Expanded(
             flex: 5,
             child: Column(
@@ -127,7 +173,6 @@ class _DesktopLayout extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 28),
-          // Right column — comments (independently scrollable)
           SizedBox(
             width: 380,
             child: CommentSection(videoPostId: post.id),
@@ -158,8 +203,7 @@ class _MobileLayout extends StatelessWidget {
             child: YoutubePlayer(controller: controller),
           ),
           Padding(
-            padding:
-                EdgeInsets.fromLTRB(hPad, 16, hPad, 0),
+            padding: EdgeInsets.fromLTRB(hPad, 16, hPad, 0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -236,7 +280,8 @@ class _PostedByRow extends StatelessWidget {
       radius: 18,
       backgroundColor: AppPallate.gradient1,
       child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          style: const TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold)),
     );
   }
 }

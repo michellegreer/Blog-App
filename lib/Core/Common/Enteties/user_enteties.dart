@@ -2,8 +2,9 @@ class UserEnteties {
   final String id;
   final String email;
   final String name;
-  final String role;
-  final bool isApproved;
+  final bool isAdmin;
+  final String? username;
+  final String? phone;
   final String? avatarUrl;
   final String? bio;
 
@@ -11,11 +12,10 @@ class UserEnteties {
     required this.id,
     required this.email,
     required this.name,
-    this.role = 'user',
-    this.isApproved = false,
+    this.isAdmin = false,
+    this.username,
+    this.phone,
     this.avatarUrl,
     this.bio,
   });
-
-  bool get isAdmin => role == 'admin' || email == 'michelle@michellesblog.net';
 }

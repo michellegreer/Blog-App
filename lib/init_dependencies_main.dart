@@ -7,6 +7,7 @@ Future<void> initDependencies() async {
   _blogInit();
   _videoBlogInit();
   _commentInit();
+  _inviteInit();
 
   final supabase = await Supabase.initialize(
     url: AppSecrets.supaBaseUrl,
@@ -44,6 +45,7 @@ void _videoBlogInit() {
     ..registerFactory(() => CreateVideoPost(serviceLocater()))
     ..registerFactory(() => UpdateVideoPost(serviceLocater()))
     ..registerFactory(() => DeleteVideoPost(serviceLocater()))
+    ..registerFactory(() => GetVideoByIdPrefix(serviceLocater()))
     ..registerLazySingleton(
       () => VideoBlogBloc(
         getAllVideoPosts: serviceLocater(),
@@ -78,6 +80,12 @@ void _blogInit() {
     );
 }
 
+void _inviteInit() {
+  serviceLocater
+    ..registerFactory(() => InviteRemoteDataSource(serviceLocater()))
+    ..registerFactory(() => SendInvite(serviceLocater()));
+}
+
 void _commentInit() {
   serviceLocater
     ..registerFactory<CommentRemoteDataSource>(
@@ -104,12 +112,20 @@ void _authInit() {
     ..registerFactory(() => UserSignup(serviceLocater()))
     ..registerFactory(() => UserLogin(serviceLocater()))
     ..registerFactory(() => CurrentUser(serviceLocater()))
+    ..registerFactory(() => ForgotPassword(serviceLocater()))
+    ..registerFactory(() => ResetPassword(serviceLocater()))
+    ..registerFactory(() => RequestPhoneOtp(serviceLocater()))
+    ..registerFactory(() => VerifyPhoneOtp(serviceLocater()))
     ..registerLazySingleton(
       () => AuthBloc(
         userSignup: serviceLocater(),
         userLogin: serviceLocater(),
         currentUser: serviceLocater(),
         appUserCubit: serviceLocater(),
+        forgotPassword: serviceLocater(),
+        resetPassword: serviceLocater(),
+        requestPhoneOtp: serviceLocater(),
+        verifyPhoneOtp: serviceLocater(),
       ),
     );
 }

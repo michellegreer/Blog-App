@@ -22,7 +22,6 @@ class _SignupPageState extends State<SignupPage> {
   final bioController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   bool isVisible = true;
-  bool _submitted = false;
 
   @override
   void dispose() {
@@ -41,41 +40,11 @@ class _SignupPageState extends State<SignupPage> {
           if (state is AuthFailure) {
             showSnackbar(context, state.message);
           }
-          if (state is AuthPendingApproval) {
-            setState(() => _submitted = true);
+          if (state is AuthSuccess) {
+            Navigator.of(context).pop();
           }
         },
         builder: (context, state) {
-          if (_submitted) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('🐱', style: TextStyle(fontSize: 64)),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Request received!',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'The administrator will review your account and send you an email when it\'s approved.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 32),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Back to home'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
           if (state is AuthLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -123,7 +92,7 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                     const SizedBox(height: 20),
                     AuthGradientButton(
-                      textt: 'Request Account',
+                      textt: 'Sign Up',
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
                           context.read<AuthBloc>().add(

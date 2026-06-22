@@ -19,4 +19,5 @@ abstract interface class VideoPostRepository {
     String? commentary,
   });
   Future<Either<Failure, Unit>> deleteVideoPost(String id);
+  Future<Either<Failure, VideoPost>> getVideoByIdPrefix(String idPrefix);
 }

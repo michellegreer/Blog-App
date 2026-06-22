@@ -72,4 +72,14 @@ class VideoPostRepositoryImpl implements VideoPostRepository {
       return left(Failure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, VideoPost>> getVideoByIdPrefix(String idPrefix) async {
+    try {
+      final post = await remoteDataSource.getVideoByIdPrefix(idPrefix);
+      return right(post);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
+  }
 }

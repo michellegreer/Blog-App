@@ -19,6 +19,7 @@ abstract interface class VideoPostRemoteDataSource {
     String? commentary,
   });
   Future<void> deleteVideoPost(String id);
+  Future<VideoPostModel> getVideoByIdPrefix(String idPrefix);
 }
 
 class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
@@ -94,6 +95,21 @@ class VideoPostRemoteDataSourceImpl implements VideoPostRemoteDataSource {
   Future<void> deleteVideoPost(String id) async {
     try {
       await supabaseClient.from('video_posts').delete().eq('id', id);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<VideoPostModel> getVideoByIdPrefix(String idPrefix) async {
+    try {
+      final response = await supabaseClient
+          .from('video_posts')
+          .select()
+          .like('id', '$idPrefix%')
+          .limit(1)
+          .single();
+      return VideoPostModel.fromJson(response);
     } catch (e) {
       throw ServerException(e.toString());
     }

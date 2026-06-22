@@ -1,8 +1,6 @@
 import 'package:blog_app/Core/Errors/exceptions.dart';
-import 'package:blog_app/Core/Secrets/app_secrets.dart';
 import 'package:blog_app/Features/Auth/Data/Modals/user_modal.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 abstract interface class AuthRemoteDatasource {
   Session? get currentUserSession;
@@ -17,6 +15,10 @@ abstract interface class AuthRemoteDatasource {
     required String email,
     required String password,
   });
+  Future<void> sendPasswordResetEmail({required String email, required String redirectTo});
+  Future<void> updatePassword({required String newPassword});
+  Future<void> sendPhoneOtp({required String phone});
+  Future<UserModel> verifyPhoneOtp({required String phone, required String token});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
@@ -53,39 +55,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
     required String bio,
   }) async {
     try {
-      final approvalToken = const Uuid().v4();
-
       final AuthResponse res = await supabaseClient.auth.signUp(
         email: email,
         password: password,
         data: {
           'name': name,
-          'approval_token': approvalToken,
           'bio': bio.trim().isEmpty ? null : bio.trim(),
         },
       );
 
       if (res.user == null) throw ServerException('User is null!');
 
-      // Notify admin before signing out (session required for invoke)
-      await supabaseClient.functions.invoke(
-        'notify-admin',
-        body: {
-          'userName': name,
-          'userEmail': email,
-          'userBio': bio.trim(),
-          'userId': res.user!.id,
-          'approvalToken': approvalToken,
-        },
-      ).catchError((_) => FunctionResponse(data: null, status: 0));
+      await supabaseClient.from('profiles').upsert({
+        'id': res.user!.id,
+        'name': name,
+        'bio': bio.trim().isEmpty ? null : bio.trim(),
+      });
 
-      // Sign out immediately — user must wait for admin approval
-      await supabaseClient.auth.signOut();
-
-      return UserModel.fromJson(res.user!.toJson()).copyWith(
+      return UserModel(
+        id: res.user!.id,
+        email: email,
         name: name,
-        isApproved: false,
-        role: 'user',
+        bio: bio.trim().isEmpty ? null : bio.trim(),
       );
     } on AuthException catch (e) {
       throw ServerException(e.message);
@@ -107,23 +98,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
 
       if (res.user == null) throw ServerException('User is null!');
 
-      // Fetch profile to check approval status
       final profileData = await supabaseClient
           .from('profiles')
           .select()
           .eq('id', res.user!.id)
           .single();
-
-      final isApproved = profileData['is_approved'] as bool? ?? false;
-      final role = profileData['role'] as String? ?? 'user';
-
-      if (!isApproved && role != 'admin' && email != AppSecrets.adminEmail) {
-        await supabaseClient.auth.signOut();
-        throw MyAuthException(
-          'Your account is pending administrator approval. '
-          'You will receive an email when your account is ready.',
-        );
-      }
 
       return UserModel.fromJson(profileData)
           .copyWith(email: res.user!.email ?? email);
@@ -131,6 +110,87 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDatasource {
       rethrow;
     } on AuthException catch (e) {
       throw MyAuthException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail({
+    required String email,
+    required String redirectTo,
+  }) async {
+    try {
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        redirectTo: redirectTo,
+      );
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    try {
+      await supabaseClient.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> sendPhoneOtp({required String phone}) async {
+    try {
+      await supabaseClient.auth.signInWithOtp(phone: phone);
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> verifyPhoneOtp({
+    required String phone,
+    required String token,
+  }) async {
+    try {
+      final res = await supabaseClient.auth.verifyOTP(
+        phone: phone,
+        token: token,
+        type: OtpType.sms,
+      );
+
+      if (res.session == null || res.user == null) {
+        throw ServerException('Verification failed');
+      }
+
+      try {
+        final profileData = await supabaseClient
+            .from('profiles')
+            .select()
+            .eq('id', res.user!.id)
+            .single();
+        return UserModel.fromJson(profileData)
+            .copyWith(email: res.user!.email);
+      } catch (_) {
+        // Profile doesn't exist yet (new user via invite phone flow)
+        return UserModel(
+          id: res.user!.id,
+          email: res.user!.email ?? '',
+          name: phone,
+          phone: phone,
+        );
+      }
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
     } catch (e) {
       throw ServerException(e.toString());
     }

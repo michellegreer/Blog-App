@@ -1,13 +1,20 @@
 class AppSecrets {
+  // ── Local dev → Supabase dev branch ───────────────────────────────────────
+  // Replace these with your dev branch credentials from:
+  // Supabase dashboard → production project → Branches → dev → API settings
+  //
+  // ── Production → Vercel env vars (never edit here) ────────────────────────
+  // SUPABASE_URL and SUPABASE_ANON_KEY are set in Vercel dashboard.
+  // The defaultValues below are ONLY used for local flutter run.
+
   static const supaBaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://irroysbfmvchllwgvnrn.supabase.co',
+    defaultValue: 'https://ldurlirpcnssqhlzvqau.supabase.co',
   );
 
   static const supaBaseAnon = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlycm95c2JmbXZjaGxsd2d2bnJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MTE0MjQsImV4cCI6MjA5NTk4NzQyNH0.xKjYGJAZAiNdA9eRA4-RPFQS3e2rWZQT6BfIuppioRY',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkdXJsaXJwY25zc3FobHp2cWF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNTMwOTcsImV4cCI6MjA5NzcyOTA5N30.Jp0A4NEzlJ-8sIZdCS6i8Hv2zE-xhpDXeSAWjXZeyl8',
   );
 
   static const resendAPIKey = String.fromEnvironment(
@@ -17,6 +24,6 @@ class AppSecrets {
 
   static const adminEmail = String.fromEnvironment(
     'ADMIN_EMAIL',
-    defaultValue: 'michelle@michellesblog.net',
+    defaultValue: 'michelle@michellegreer.com',
   );
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:blog_app/Core/Common/Utils/slug_utils.dart';
 import 'package:blog_app/Core/Common/Widgets/user_bio_sheet.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/Entities/video_post.dart';
-import 'package:blog_app/Features/VideoBlog/Presentation/pages/video_post_detail_page.dart';
 
 class VideoPostCard extends StatelessWidget {
   final VideoPost post;
@@ -27,10 +28,7 @@ class VideoPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => VideoPostDetailPage(post: post)),
-      ),
+      onTap: () => context.go('/video/${videoSlug(post)}', extra: post),
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         clipBehavior: Clip.antiAlias,

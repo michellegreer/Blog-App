@@ -19,4 +19,12 @@ final class AuthFailure extends AuthState {
   const AuthFailure(this.message);
 }
 
-final class AuthPendingApproval extends AuthState {}
+final class AuthPasswordResetEmailSent extends AuthState {}
+
+final class AuthPasswordResetSuccess extends AuthState {}
+
+final class AuthPhoneOtpSent extends AuthState {
+  final String phone;
+  const AuthPhoneOtpSent(this.phone);
+}
+
