@@ -38,15 +38,19 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Only admins can invite
-    const { data: profile } = await adminClient
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single()
+    // Allow admins OR circle registrants/co-registrants to invite
+    const [{ data: profile }, { data: registrantOf }] = await Promise.all([
+      adminClient.from('profiles').select('is_admin').eq('id', user.id).single(),
+      adminClient
+        .from('family_circles')
+        .select('id')
+        .or(`registrant_id.eq.${user.id},co_registrant_id.eq.${user.id}`)
+        .limit(1),
+    ])
 
-    if (!profile || !profile.is_admin) {
-      return new Response(JSON.stringify({ error: 'Only admins can invite people' }), {
+    const canInvite = profile?.is_admin || (registrantOf && registrantOf.length > 0)
+    if (!canInvite) {
+      return new Response(JSON.stringify({ error: 'Only circle managers can invite people' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
