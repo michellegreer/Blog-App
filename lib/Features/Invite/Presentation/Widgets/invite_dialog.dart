@@ -59,10 +59,9 @@ class _InviteDialogState extends State<_InviteDialog> {
         if (userId != null) {
           await supabase.from('circle_invites').insert({
             'invited_by': userId,
-            'invited_email': _emailController.text.trim(),
+            'invitee_email': _emailController.text.trim(),
             'target_circle_type': widget.circleType,
             'target_circle_id': widget.circleId,
-            'status': 'pending',
           });
         }
       }
