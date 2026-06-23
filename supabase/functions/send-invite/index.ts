@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { email, name } = await req.json()
+    const { email, name, redirectTo } = await req.json()
     if (!email || typeof email !== 'string') {
       return new Response(JSON.stringify({ error: 'Email is required' }), {
         status: 400,
@@ -64,9 +64,15 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Use the redirect URL passed by the client (it knows its own origin),
+    // falling back to SITE_URL for any non-web callers.
+    const inviteRedirectTo = (typeof redirectTo === 'string' && redirectTo.startsWith('http'))
+      ? redirectTo
+      : `${siteUrl}/complete-profile`
+
     const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: { name: name ?? '' },
-      redirectTo: `${siteUrl}/complete-profile`,
+      redirectTo: inviteRedirectTo,
     })
 
     if (inviteError && !inviteError.message.toLowerCase().includes('already been registered')) {
