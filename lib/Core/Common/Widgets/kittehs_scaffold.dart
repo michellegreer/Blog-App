@@ -5,6 +5,7 @@ import 'package:blog_app/Core/Common/Widgets/auth_actions.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Features/About/about_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/signup_page.dart';
+import 'package:blog_app/Features/Invite/Presentation/Pages/circles_page.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/bloc/video_blog_bloc.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/pages/video_post_form_page.dart';
 
@@ -56,6 +57,7 @@ class _WideScaffold extends StatelessWidget {
         title: _Logo(isWide: true),
         actions: [
           _AboutButton(isWide: true),
+          _CirclesButton(isWide: true),
           _NewPostButton(isWide: true),
           ...extraActions,
           const AuthActions(),
@@ -94,6 +96,8 @@ class _NarrowScaffold extends StatelessWidget {
             child: Row(
               children: [
                 _AboutButton(isWide: false),
+                const SizedBox(width: 8),
+                _CirclesButton(isWide: false),
                 const SizedBox(width: 8),
                 _NewPostButton(isWide: false),
               ],
@@ -153,6 +157,30 @@ class _AboutButton extends StatelessWidget {
         color: AppPallate.coralColor,
         fontSize: isWide ? 20 : 14,
       )),
+    );
+  }
+}
+
+class _CirclesButton extends StatelessWidget {
+  final bool isWide;
+  const _CirclesButton({required this.isWide});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AppUserCubit, AppUserState>(
+      builder: (context, userState) {
+        if (userState is! AppUserLoggedIn) return const SizedBox.shrink();
+        return TextButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const CirclesPage()),
+          ),
+          child: Text('Circles', style: TextStyle(
+            color: AppPallate.coralColor,
+            fontSize: isWide ? 20 : 14,
+          )),
+        );
+      },
     );
   }
 }

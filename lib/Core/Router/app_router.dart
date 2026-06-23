@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/complete_profile_page.dart';
 import 'package:blog_app/Features/Auth/Presentation/Pages/reset_password_page.dart';
+import 'package:blog_app/Features/Invite/Presentation/Pages/circles_page.dart';
 import 'package:blog_app/Features/VideoBlog/Domain/Entities/video_post.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/pages/user_profile_page.dart';
 import 'package:blog_app/Features/VideoBlog/Presentation/pages/video_post_list_page.dart';
@@ -34,6 +35,12 @@ final appRouter = GoRouter(
       path: '/complete-profile',
       pageBuilder: (context, state) => const NoTransitionPage(
         child: CompleteProfilePage(),
+      ),
+    ),
+    GoRoute(
+      path: '/circles',
+      pageBuilder: (context, state) => const NoTransitionPage(
+        child: CirclesPage(),
       ),
     ),
     // Must be last — catches /:username after all fixed routes

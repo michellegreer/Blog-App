@@ -2,17 +2,31 @@ import 'package:blog_app/Core/Themes/app_pallate.dart';
 import 'package:blog_app/Features/Invite/Domain/UseCases/send_invite.dart';
 import 'package:blog_app/init_dependencies.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-Future<void> showInviteDialog(BuildContext context) {
+Future<void> showInviteDialog(
+  BuildContext context, {
+  String? circleId,
+  String? circleType,
+  String? circleLabel,
+}) {
   return showDialog(
     context: context,
     barrierDismissible: true,
-    builder: (_) => const _InviteDialog(),
+    builder: (_) => _InviteDialog(
+      circleId: circleId,
+      circleType: circleType,
+      circleLabel: circleLabel,
+    ),
   );
 }
 
 class _InviteDialog extends StatefulWidget {
-  const _InviteDialog();
+  final String? circleId;
+  final String? circleType;
+  final String? circleLabel;
+
+  const _InviteDialog({this.circleId, this.circleType, this.circleLabel});
 
   @override
   State<_InviteDialog> createState() => _InviteDialogState();
@@ -37,16 +51,36 @@ class _InviteDialogState extends State<_InviteDialog> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _loading = true; _error = null; });
 
-    final result = await serviceLocater<SendInvite>().call(
-      email: _emailController.text.trim(),
-      name: _nameController.text.trim(),
-    );
+    try {
+      // Record the circle invite in DB if a target circle was specified
+      if (widget.circleId != null && widget.circleType != null) {
+        final supabase = serviceLocater<SupabaseClient>();
+        final userId = supabase.auth.currentUser?.id;
+        if (userId != null) {
+          await supabase.from('circle_invites').insert({
+            'invited_by': userId,
+            'invited_email': _emailController.text.trim(),
+            'target_circle_type': widget.circleType,
+            'target_circle_id': widget.circleId,
+            'status': 'pending',
+          });
+        }
+      }
 
-    if (!mounted) return;
-    result.fold(
-      (failure) => setState(() { _loading = false; _error = failure.message; }),
-      (_) => setState(() { _loading = false; _sent = true; }),
-    );
+      final result = await serviceLocater<SendInvite>().call(
+        email: _emailController.text.trim(),
+        name: _nameController.text.trim(),
+        circleId: widget.circleId,
+      );
+
+      if (!mounted) return;
+      result.fold(
+        (failure) => setState(() { _loading = false; _error = failure.message; }),
+        (_) => setState(() { _loading = false; _sent = true; }),
+      );
+    } catch (e) {
+      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+    }
   }
 
   @override
@@ -61,15 +95,21 @@ class _InviteDialogState extends State<_InviteDialog> {
         constraints: const BoxConstraints(maxWidth: 420),
         child: Padding(
           padding: const EdgeInsets.all(28),
-          child: _sent ? _SuccessView(email: _emailController.text.trim()) : _FormView(
-            formKey: _formKey,
-            emailController: _emailController,
-            nameController: _nameController,
-            loading: _loading,
-            error: _error,
-            onSend: _send,
-            onCancel: () => Navigator.of(context).pop(),
-          ),
+          child: _sent
+              ? _SuccessView(
+                  email: _emailController.text.trim(),
+                  circleLabel: widget.circleLabel,
+                )
+              : _FormView(
+                  formKey: _formKey,
+                  emailController: _emailController,
+                  nameController: _nameController,
+                  loading: _loading,
+                  error: _error,
+                  circleLabel: widget.circleLabel,
+                  onSend: _send,
+                  onCancel: () => Navigator.of(context).pop(),
+                ),
         ),
       ),
     );
@@ -82,6 +122,7 @@ class _FormView extends StatelessWidget {
   final TextEditingController nameController;
   final bool loading;
   final String? error;
+  final String? circleLabel;
   final VoidCallback onSend;
   final VoidCallback onCancel;
 
@@ -93,22 +134,30 @@ class _FormView extends StatelessWidget {
     required this.error,
     required this.onSend,
     required this.onCancel,
+    this.circleLabel,
   });
 
   @override
   Widget build(BuildContext context) {
+    final description = circleLabel != null
+        ? "They'll get an email invite. Once they confirm their account they'll be added to $circleLabel."
+        : "They'll get an email with a link to join. You can share a specific video with them once they're in.";
+
     return Form(
       key: formKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Invite someone', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white)),
-          const SizedBox(height: 6),
           Text(
-            "They'll get an email with a link to join. You can share a specific video with them once they're in.",
-            style: const TextStyle(color: Colors.white60, fontSize: 13),
+            circleLabel != null ? 'Invite to $circleLabel' : 'Invite someone',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(color: Colors.white),
           ),
+          const SizedBox(height: 6),
+          Text(description, style: const TextStyle(color: Colors.white60, fontSize: 13)),
           const SizedBox(height: 24),
           TextFormField(
             controller: nameController,
@@ -129,7 +178,10 @@ class _FormView extends StatelessWidget {
           ),
           if (error != null) ...[
             const SizedBox(height: 12),
-            Text(error!, style: const TextStyle(color: AppPallate.errorColor, fontSize: 13)),
+            Text(
+              error!,
+              style: const TextStyle(color: AppPallate.errorColor, fontSize: 13),
+            ),
           ],
           const SizedBox(height: 28),
           Row(
@@ -145,7 +197,12 @@ class _FormView extends StatelessWidget {
                   shape: const StadiumBorder(),
                 ),
                 child: loading
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
                     : const Text('Send invite'),
               ),
             ],
@@ -158,19 +215,32 @@ class _FormView extends StatelessWidget {
 
 class _SuccessView extends StatelessWidget {
   final String email;
-  const _SuccessView({required this.email});
+  final String? circleLabel;
+
+  const _SuccessView({required this.email, this.circleLabel});
 
   @override
   Widget build(BuildContext context) {
+    final message = circleLabel != null
+        ? "We sent an invite to $email. Once they confirm their account, they'll be added to $circleLabel."
+        : "We sent an invite to $email. They'll get a link to join Kitties FTW.";
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.check_circle_outline, color: AppPallate.coralColor, size: 48),
+        const Icon(Icons.check_circle_outline,
+            color: AppPallate.coralColor, size: 48),
         const SizedBox(height: 16),
-        Text('Invite sent!', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white)),
+        Text(
+          'Invite sent!',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(color: Colors.white),
+        ),
         const SizedBox(height: 8),
         Text(
-          'We sent an invite to $email. They\'ll get a link to join Kitties FTW.',
+          message,
           textAlign: TextAlign.center,
           style: const TextStyle(color: Colors.white60, fontSize: 13),
         ),
