@@ -6,6 +6,7 @@ import 'package:blog_app/Features/Invite/Presentation/Widgets/invite_dialog.dart
 import 'package:blog_app/init_dependencies.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 
@@ -248,12 +249,17 @@ class _CirclesPageState extends State<CirclesPage> {
 
     setState(() => _loading = true);
     try {
-      final fc = await supabase
-          .from('family_circles')
-          .insert({'name': name, 'registrant_id': userId})
-          .select('id')
-          .single();
-      final fcId = fc['id'] as String;
+      // Generate the ID client-side so we can skip RETURNING.
+      // PostgREST applies the SELECT policy to RETURNING rows in the same
+      // statement, and the STABLE my_family_circle_ids() function doesn't
+      // see the just-inserted row yet — causing a spurious 42501.
+      final fcId = const Uuid().v4();
+
+      await supabase.from('family_circles').insert({
+        'id': fcId,
+        'name': name,
+        'registrant_id': userId,
+      });
 
       await Future.wait([
         supabase.from('extended_family_circles')
