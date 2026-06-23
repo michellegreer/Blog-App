@@ -263,9 +263,9 @@ class _CirclesPageState extends State<CirclesPage> {
 
       await Future.wait([
         supabase.from('extended_family_circles')
-            .insert({'family_circle_id': fcId, 'name': 'Extended Family'}),
+            .insert({'family_circle_id': fcId}),
         supabase.from('friends_circles')
-            .insert({'family_circle_id': fcId, 'name': 'Friends'}),
+            .insert({'family_circle_id': fcId}),
         supabase.from('family_circle_members').insert({
           'family_circle_id': fcId,
           'profile_id': userId,
