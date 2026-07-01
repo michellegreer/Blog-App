@@ -885,7 +885,7 @@ class _AddExistingTabState extends State<_AddExistingTab> {
     final rows = await supabase
         .from('profiles')
         .select('id, name, avatar_url, username')
-        .ilike('name', '%${query.trim()}%')
+        .or('name.ilike.%${query.trim()}%,email.ilike.%${query.trim()}%')
         .limit(10);
     if (!mounted) return;
     setState(() {
