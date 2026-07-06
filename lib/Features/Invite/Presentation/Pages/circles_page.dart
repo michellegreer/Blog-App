@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:blog_app/Core/Common/Cubits/AppUser/app_user_cubit.dart';
 import 'package:blog_app/Core/Common/Widgets/kittehs_scaffold.dart';
 import 'package:blog_app/Core/Themes/app_pallate.dart';
+import 'package:blog_app/Core/Utils/show_snackbar.dart';
 import 'package:blog_app/Features/Invite/Presentation/Widgets/invite_dialog.dart';
 import 'package:blog_app/init_dependencies.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -234,12 +235,34 @@ class _CirclesPageState extends State<CirclesPage> {
     Map<String, dynamic> extra = const {},
   }) async {
     final supabase = serviceLocater<SupabaseClient>();
-    await supabase.from(table).insert({
-      idColumn: circleId,
-      'profile_id': member.profileId,
-      ...extra,
-    });
-    await _load();
+    try {
+      await supabase.from(table).insert({
+        idColumn: circleId,
+        'profile_id': member.profileId,
+        ...extra,
+      });
+      await _load();
+    } catch (e) {
+      if (mounted) showSnackbar(context, 'Could not add member: $e');
+    }
+  }
+
+  // Returns the extFamilyCircleId, creating the row if it doesn't exist yet.
+  Future<String> _getOrCreateExtFamilyCircle(String familyCircleId) async {
+    if (_data?.extFamilyCircleId != null) return _data!.extFamilyCircleId!;
+    final supabase = serviceLocater<SupabaseClient>();
+    final id = const Uuid().v4();
+    await supabase.from('extended_family_circles').insert({'id': id, 'family_circle_id': familyCircleId});
+    return id;
+  }
+
+  // Returns the friendsCircleId, creating the row if it doesn't exist yet.
+  Future<String> _getOrCreateFriendsCircle(String familyCircleId) async {
+    if (_data?.friendsCircleId != null) return _data!.friendsCircleId!;
+    final supabase = serviceLocater<SupabaseClient>();
+    final id = const Uuid().v4();
+    await supabase.from('friends_circles').insert({'id': id, 'family_circle_id': familyCircleId});
+    return id;
   }
 
   Future<void> _createCircle(String name) async {
@@ -320,11 +343,11 @@ class _CirclesPageState extends State<CirclesPage> {
   @override
   Widget build(BuildContext context) {
     return KittehsScaffold(
-      body: _buildBody(context),
+      body: _buildBody(),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody() {
     if (_loading) return const Center(child: CircularProgressIndicator());
 
     if (_error != null) {
@@ -436,22 +459,28 @@ class _CirclesPageState extends State<CirclesPage> {
             members: data.extFamilyMembers,
             isManager: data.isManager,
             currentUserId: currentUserId,
-            onAdd: (data.isManager && data.extFamilyCircleId != null)
-                ? () => _showAddSheet(
-                      context: context,
-                      circleId: data.extFamilyCircleId!,
-                      circleType: 'extended_family',
-                      circleLabel: 'Extended Family',
-                      existingIds: data.extFamilyMembers
-                          .map((m) => m.profileId)
-                          .toSet(),
-                      onAddExisting: (member) => _addExistingMember(
-                        table: 'extended_family_circle_members',
-                        idColumn: 'extended_family_circle_id',
-                        circleId: data.extFamilyCircleId!,
-                        member: member,
-                      ),
-                    )
+            onAdd: data.isManager
+                ? () async {
+                    try {
+                      final efcId = await _getOrCreateExtFamilyCircle(data.familyCircleId);
+                      if (!mounted) return;
+                      _showAddSheet(
+                        context: context,
+                        circleId: efcId,
+                        circleType: 'extended_family',
+                        circleLabel: 'Extended Family',
+                        existingIds: data.extFamilyMembers.map((m) => m.profileId).toSet(),
+                        onAddExisting: (member) => _addExistingMember(
+                          table: 'extended_family_circle_members',
+                          idColumn: 'extended_family_circle_id',
+                          circleId: efcId,
+                          member: member,
+                        ),
+                      );
+                    } catch (e) {
+                      if (mounted) showSnackbar(context, 'Error: $e');
+                    }
+                  }
                 : null,
             onRemove: (data.isManager && data.extFamilyCircleId != null)
                 ? (member) => _removeMember(
@@ -472,21 +501,28 @@ class _CirclesPageState extends State<CirclesPage> {
             members: data.friendsMembers,
             isManager: data.isManager,
             currentUserId: currentUserId,
-            onAdd: (data.isManager && data.friendsCircleId != null)
-                ? () => _showAddSheet(
-                      context: context,
-                      circleId: data.friendsCircleId!,
-                      circleType: 'friends',
-                      circleLabel: 'Friends',
-                      existingIds:
-                          data.friendsMembers.map((m) => m.profileId).toSet(),
-                      onAddExisting: (member) => _addExistingMember(
-                        table: 'friends_circle_members',
-                        idColumn: 'friends_circle_id',
-                        circleId: data.friendsCircleId!,
-                        member: member,
-                      ),
-                    )
+            onAdd: data.isManager
+                ? () async {
+                    try {
+                      final frcId = await _getOrCreateFriendsCircle(data.familyCircleId);
+                      if (!mounted) return;
+                      _showAddSheet(
+                        context: context,
+                        circleId: frcId,
+                        circleType: 'friends',
+                        circleLabel: 'Friends',
+                        existingIds: data.friendsMembers.map((m) => m.profileId).toSet(),
+                        onAddExisting: (member) => _addExistingMember(
+                          table: 'friends_circle_members',
+                          idColumn: 'friends_circle_id',
+                          circleId: frcId,
+                          member: member,
+                        ),
+                      );
+                    } catch (e) {
+                      if (mounted) showSnackbar(context, 'Error: $e');
+                    }
+                  }
                 : null,
             onRemove: (data.isManager && data.friendsCircleId != null)
                 ? (member) => _removeMember(
