@@ -91,7 +91,7 @@ CREATE TABLE public.circle_invites (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   invited_by         uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   invitee_email      text NOT NULL,
-  invite_token       text NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32), 'hex'),
+  invite_token       text NOT NULL UNIQUE DEFAULT replace(gen_random_uuid()::text, '-', ''),
   target_circle_type public.circle_type NOT NULL,
   target_circle_id   uuid NOT NULL,
   status             public.invite_status NOT NULL DEFAULT 'pending',
