@@ -52155,7 +52155,7 @@ a5.e=b0
 case 16:s=a0!=null?18:19
 break
 case 18:s=20
-return A.l(m.bX("friends_circle_members").hN(0,"profile_id, profiles(name, avatar_url, username)").eE("friends_circle_id",a0),$async$iu)
+return A.l(m.bX("friends_circle_members").hN(0,"profile_id, profiles!friends_circle_members_profile_id_fkey(name, avatar_url, username)").eE("friends_circle_id",a0),$async$iu)
 case 20:a3=b5
 a6=J.h9(a3,new A.aBw(),a6)
 b1=A.a5(a6,a6.$ti.h("aw.E"))

@@ -178,7 +178,7 @@ class _CirclesPageState extends State<CirclesPage> {
       if (frcId != null) {
         final rows = await supabase
             .from('friends_circle_members')
-            .select('profile_id, profiles(name, avatar_url, username)')
+            .select('profile_id, profiles!friends_circle_members_profile_id_fkey(name, avatar_url, username)')
             .eq('friends_circle_id', frcId);
         friendsMembers = rows.map((r) {
           final p = r['profiles'] as Map<String, dynamic>;
